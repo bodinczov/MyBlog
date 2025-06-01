@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать статью</title>
+    <style>
+        body{font-family:Segoe UI,Arial,sans-serif;background:#fff;margin:0;padding:2rem}
+        h1{color:#ff7700}
+        form{max-width:600px;margin:auto}
+        input,textarea{width:100%;padding:.5rem;margin:.5rem 0;border:1px solid #ccc;border-radius:4px}
+        button{background:#ff7700;color:#fff;border:none;padding:.5rem 1rem;border-radius:4px;cursor:pointer}
+    </style>
+</head>
+<body>
+<h1>Редактировать статью</h1>
+
+<form th:action="@{'/admin/articles/' + ${article.id} + '/edit'}" method="post">
+    <input type="text" name="title" th:value="${article.title}" required/>
+    <textarea name="body" rows="10" th:text="${article.body}" required></textarea>
+    <button type="submit">Сохранить</button>
+</form>
+</body>
+</html>

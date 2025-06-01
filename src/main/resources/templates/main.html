@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Статьи (вход выполнен)</title>
+    <style>
+        body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#fff}
+        header{background:#ff7700;color:#fff;padding:1rem;display:flex;justify-content:space-between}
+        article{border-bottom:1px solid #eee;padding:1rem}
+        button.like, .comment-toggle {
+            background:none;
+            border:none;
+            color:#ff7700;
+            cursor:pointer;
+            font-size:1rem;
+        }
+        .liked {
+            color:red;
+            font-weight:bold;
+        }
+        textarea{width:100%;height:4rem;padding:.5rem;border:1px solid #ddd;border-radius:4px}
+        .comment{margin:.5rem 0;padding:.5rem;border-left:3px solid #ff7700;background:#fff8f0;position:relative}
+        .comment button {
+            position:absolute;
+            top:4px;
+            right:4px;
+            background:none;
+            border:none;
+            color:#888;
+            cursor:pointer;
+        }
+        .comment button:hover {
+            color:red;
+        }
+    </style>
+    <script>
+        async function loadComments(articleId) {
+            const container = document.getElementById("comments-" + articleId);
+            if (container.dataset.loaded === "true") {
+                container.style.display = container.style.display === "none" ? "block" : "none";
+                return;
+            }
+
+            const token = localStorage.getItem("token");
+            const response = await fetch(`/articles/${articleId}/comments`, {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+            const comments = await response.json();
+
+            container.innerHTML = comments.map((c, i) =>
+            `<div class="comment" id="comment-${c.id}">
+                <b>${c.author}</b> <small>${c.createdAt}</small>
+                <div>${c.text}</div>
+                ${c.canDelete ? `<button onclick="deleteComment(${c.id}, 'comment-${c.id}')">🗑</button>` : ""}
+             </div>`
+            ).join("");
+
+            container.style.display = "block";
+            container.dataset.loaded = "true";
+        }
+
+        async function toggleLike(articleId) {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`/articles/${articleId}/like`, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const likeBtn = document.getElementById("like-btn-" + articleId);
+                const likeCount = document.getElementById("like-count-" + articleId);
+
+                likeCount.innerText = "❤ " + data.likesCount;
+                if (data.liked) {
+                    likeBtn.classList.add("liked");
+                } else {
+                    likeBtn.classList.remove("liked");
+                }
+            }
+        }
+
+        async function deleteComment(commentId, commentDivId) {
+            const token = localStorage.getItem("token");
+
+            const confirmed = confirm("Удалить комментарий?");
+            if (!confirmed) return;
+
+            const response = await fetch(`/comments/${commentId}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            if (response.ok) {
+                const div = document.getElementById(commentDivId);
+                div.remove();
+            } else {
+                alert("Ошибка удаления");
+            }
+        }
+    </script>
+</head>
+<body>
+<header>
+    <h1>Статьи</h1>
+    <form th:action="@{/logout}" method="post">
+        <button style="background:#fff;color:#ff7700;border:none;padding:.5rem 1rem;border-radius:4px;cursor:pointer">
+            Выйти
+        </button>
+    </form>
+</header>
+
+<section th:each="article : ${articles}">
+    <article>
+        <h2 th:text="${article.title}">Заголовок</h2>
+        <p th:text="${article.body}">Текст ...</p>
+
+        <button type="button"
+                th:id="'like-btn-' + ${article.id}"
+                th:onclick="'toggleLike(' + ${article.id} + ')'"
+                class="like">
+            <span th:id="'like-count-' + ${article.id}">❤ 0</span>
+        </button>
+
+        <button class="comment-toggle" th:onclick="'loadComments(' + ${article.id} + ')'">
+            Показать комментарии
+        </button>
+
+        <div th:attr="id=${'comments-' + article.id}" data-loaded="false" style="display:none;"></div>
+
+        <form th:action="@{/articles/{id}/comments(id=${article.id})}" method="post" style="margin-top:.5rem">
+            <textarea name="text" placeholder="Ваш комментарий..." required></textarea>
+            <button type="submit"
+                    style="background:#ff7700;border:none;color:#fff;padding:.5rem 1rem;border-radius:4px;cursor:pointer">
+                Отправить
+            </button>
+        </form>
+    </article>
+</section>
+</body>
+</html>

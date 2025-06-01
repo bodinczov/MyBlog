@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Админ-панель</title>
+    <style>
+        body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#fff}
+        header{background:#ff7700;color:#fff;padding:1rem}
+        table{width:100%;border-collapse:collapse;margin-top:1rem}
+        th,td{border:1px solid #eee;padding:.6rem;text-align:left}
+        a.btn,button{background:#ff7700;color:#fff;border:none;padding:.3rem .7rem;border-radius:4px;text-decoration:none;cursor:pointer;font-size:.9rem}
+        form.inline{display:inline}
+        section.new{margin:1rem 0;padding:1rem;border:1px solid #eee;border-radius:8px}
+        input,textarea{width:100%;padding:.5rem;margin:.4rem 0;border:1px solid #ddd;border-radius:4px}
+    </style>
+</head>
+<body>
+<header><h1>Админ-панель</h1></header>
+
+<table>
+    <thead>
+    <tr><th>ID</th><th>Заголовок</th><th>Дата</th><th>Действия</th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="a:${articles}">
+        <td th:text="${a.id}">1</td>
+        <td th:text="${a.title}">Title</td>
+        <td th:text="${#temporals.format(a.createdAt,'dd.MM.yyyy HH:mm')}">дата</td>
+        <td>
+            <a th:href="@{'/admin/edit/' + ${a.id}}" class="btn">✏️</a>
+            <form th:action="@{/admin/articles/{id}(id=${a.id})}" method="post" class="inline">
+                <input type="hidden" name="_method" value="delete"/>
+                <button type="submit">🗑️</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<section class="new">
+    <h2>Новая статья</h2>
+    <form th:action="@{/admin/articles}" method="post">
+        <input name="title" placeholder="Заголовок" required/>
+        <textarea name="body" rows="8" placeholder="Текст статьи" required></textarea>
+        <button type="submit">Создать</button>
+    </form>
+</section>
+</body>
+</html>

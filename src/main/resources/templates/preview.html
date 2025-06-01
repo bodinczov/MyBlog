@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Все статьи</title>
+    <style>
+        body {margin:0;font-family:Segoe UI,Arial,sans-serif;background:#fff;color:#333;}
+        header {background:#ff7700;color:#fff;padding:1rem;}
+        article {border-bottom:1px solid #eee;padding:1rem;}
+        a.title {color:#ff7700;text-decoration:none;font-size:1.25rem;}
+        a.title:hover {text-decoration:underline;}
+        .snippet {margin-top:.5rem;color:#666;}
+    </style>
+</head>
+<body>
+<header><h1>Мой блог</h1></header>
+
+<section th:if="${#lists.isEmpty(articles)}" style="padding:2rem;text-align:center;">
+    <p>Статей пока нет.</p>
+</section>
+
+<section th:each="article : ${articles}">
+    <article>
+        <a th:href="@{'/articles/' + ${article.id}}" th:text="${article.title}" class="title"></a>
+        <div class="snippet" th:text="${#strings.abbreviate(article.body, 200)}">Короткое превью статьи</div>
+        <small th:text="${#temporals.format(article.createdAt,'dd.MM.yyyy HH:mm')}">дата</small>
+    </article>
+</section>
+</body>
+</html>
